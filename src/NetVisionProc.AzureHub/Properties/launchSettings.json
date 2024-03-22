@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "NeuralNetVisionProcessor": {
+      "commandName": "Project",
+      "commandLineArgs": "--port 7033",
+      "launchBrowser": false
+    }
+  }
+}

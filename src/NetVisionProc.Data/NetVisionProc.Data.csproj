@@ -1,0 +1,30 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AutoMapper" Version="12.0.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.2" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Abstractions" Version="8.0.2" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.2" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="8.0.2" />
+    <PackageReference Include="Faker.Net" Version="2.0.154" />
+    <PackageReference Include="Bogus" Version="35.3.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\NetVisionProc.Adapter\NetVisionProc.Adapter.csproj" />
+    <ProjectReference Include="..\NetVisionProc.Common.Data\NetVisionProc.Common.Data.csproj" />
+    <ProjectReference Include="..\NetVisionProc.Common\NetVisionProc.Common.csproj" />
+    <ProjectReference Include="..\NetVisionProc.Domain\NetVisionProc.Domain.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="EntityConfigs\" />
+  </ItemGroup>
+
+</Project>
