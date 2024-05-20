@@ -7,12 +7,10 @@ namespace NetVisionProc.Domain.Entities
     {
         [NameLength]
         public string Identifier { get; private set; } = null!;
+
+        public string BlobName { get; private set; } = null!;
         
-        public string SourcePath { get; private set; }
-        
-        public string BlobType { get; private set; }
-        
-        public FileExtension? Extension { get; private set; }
+        public FileExtensions? Extension { get; private set; }
         
         public string? ResultPath { get; private set; }
         

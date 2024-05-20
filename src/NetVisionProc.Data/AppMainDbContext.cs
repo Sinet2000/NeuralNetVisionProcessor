@@ -8,16 +8,11 @@ namespace NetVisionProc.Data
         }
 
         // public DbSet<TplTestModel> TplTestModels => Set<TplTestModel>();
-        
-        protected static void UpdateTableNamesToSingularForm(ModelBuilder modelBuilder)
+
+        private static void UpdateTableNamesToSingularForm(ModelBuilder modelBuilder)
         {
             foreach (var entityType in modelBuilder.Model.GetEntityTypes())
             {
-                if (entityType.IsMappedToJson())
-                {
-                    continue;
-                }
-
                 entityType.SetTableName(entityType.DisplayName());
             }
         }

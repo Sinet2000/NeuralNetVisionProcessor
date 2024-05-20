@@ -1,0 +1,132 @@
+@page "/detection-result/{partitionKey}/{rowKey}"
+@using NetVisionProc.Application.AzureTableScope.Entities
+@using NetVisionProc.Common.Extensions
+@using Azure.Storage.Blobs
+@using ClientApp.Config
+@using Microsoft.Extensions.Options
+@using NetVisionProc.Application.AzureTableScope
+
+@inject IAzureTableService AzureTableService
+@inject BlobServiceClient BlobServiceClient
+@inject BlobContainerClient BlobContainerClient
+@inject IOptions<AzureHubConfig> AzureHubConfigOptions
+
+<MudGrid Spacing="2" Justify="Justify.Center">
+    <MudItem xs="5">
+        
+        <MudCard>
+            <MudCardHeader>
+                @if (imgSrc.HasValue())
+                {
+                    <MudImage ObjectFit="ObjectFit.Cover" Fluid="true" Src="@imgSrc" Class="rounded-sm"/>
+                }
+            </MudCardHeader>
+            @* @if (imgSrc.HasValue()) *@
+            @* { *@
+            @*     <MudCardMedia Image="@imgSrc" Class="rounded-sm" Height=""/> *@
+            @* } *@
+            <MudCardContent>
+                <MudText Typo="Typo.h5">Old Paint</MudText>
+                <MudText Typo="Typo.body2">Old paint found on a stone house door.</MudText>
+                <MudText Typo="Typo.body2">This photo was taken in a small village in Istra Croatia.</MudText>
+            </MudCardContent>
+            <MudCardActions>
+                <MudButton Variant="Variant.Text" Color="Color.Primary">Share</MudButton>
+                <MudButton Variant="Variant.Text" Color="Color.Primary">Learn More</MudButton>
+            </MudCardActions>
+        </MudCard>
+    </MudItem>
+    
+    <MudItem xs="5">
+            
+        <MudCard>
+            <MudCardHeader>
+                @if (predictedImgSrc.HasValue())
+                {
+                    <MudImage ObjectFit="ObjectFit.Cover" Fluid="true" Src="@predictedImgSrc" Class="rounded-sm"/>
+                }
+            </MudCardHeader>
+            <MudCardContent>
+                <MudText Typo="Typo.h5">Old Paint</MudText>
+                <MudText Typo="Typo.body2">Old paint found on a stone house door.</MudText>
+                <MudText Typo="Typo.body2">This photo was taken in a small village in Istra Croatia.</MudText>
+            </MudCardContent>
+            <MudCardActions>
+                <MudButton Variant="Variant.Text" Color="Color.Primary">Share</MudButton>
+                <MudButton Variant="Variant.Text" Color="Color.Primary">Learn More</MudButton>
+            </MudCardActions>
+        </MudCard>
+    </MudItem>
+</MudGrid>
+
+@code {
+    [Parameter]
+    public string PartitionKey { get; set; } = null!;
+    
+    [Parameter]
+    public string RowKey { get; set; } = null!;
+    
+    private string? imgSrc;
+    private string? predictedImgSrc;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        var result = await AzureTableService
+            .GetByPartitionAndRowAsync<ImagePredictionResultTableEntity>(
+                PartitionKey,
+                RowKey,
+                select: new [] {
+                    nameof(ImagePredictionResultTableEntity.PredictionResultJson),
+                    nameof(ImagePredictionResultTableEntity.PartitionKey),
+                    nameof(ImagePredictionResultTableEntity.RowKey)
+                });
+        var data = result.FirstOrDefault();
+        Guard.Against.Null(data);
+        data.MaterializeJson();
+        
+        if (data.PredictionResult is not null)
+        {
+            await LoadSourceImage(data);
+            await LoadPredictionImage(data);
+            
+            StateHasChanged();
+        }
+        
+        await base.OnParametersSetAsync();
+    }
+    
+    private async Task LoadSourceImage(ImagePredictionResultTableEntity predictionResultTableEntity)
+    {
+        if (predictionResultTableEntity.PredictionResult is not null)
+        {
+            var predictionSourceImage = predictionResultTableEntity.PredictionResult!.ImageName;
+            imgSrc = await LoadBlobImageAsync(BlobContainerClient, predictionSourceImage);   
+        }
+    }
+
+    private async Task LoadPredictionImage(ImagePredictionResultTableEntity predictionResultTableEntity)
+    {
+        if (predictionResultTableEntity.PredictionResult is not null && predictionResultTableEntity.PredictionResult.ResultImgName.HasValue())
+        {
+            var azureHubConfig = AzureHubConfigOptions.Value;
+            var predictedImageBlobContainer =  BlobServiceClient.GetBlobContainerClient(azureHubConfig.ProcessedBlobsContainerName);
+            var predictionImage = predictionResultTableEntity.PredictionResult!.ResultImgName;
+            if (predictionImage.HasValue())
+            {
+                predictedImgSrc = await LoadBlobImageAsync(predictedImageBlobContainer, predictionImage);   
+            }
+        }
+    }
+
+    private static async Task<string> LoadBlobImageAsync(BlobContainerClient blobContainerClient, string blobName)
+    {
+        var sourceBlobClient = blobContainerClient
+            .GetBlobClient(blobName);
+
+        await using var stream = await sourceBlobClient.OpenReadAsync();
+        using var memoryStream = new MemoryStream();
+        await stream.CopyToAsync(memoryStream);
+        var base64String = Convert.ToBase64String(memoryStream.ToArray());
+        return  $"data:image/png;base64,{base64String}";
+    }
+}

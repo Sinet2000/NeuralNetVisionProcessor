@@ -48,16 +48,38 @@ namespace NetVisionProc.Common.Data
         }
         
         public static async Task<List<T>> GetListFromSqlRaw<T>(this DbContext dbContext, ISqlScriptDef sqlScriptDef)
-        where T : class
         {
             var sql = sqlScriptDef.GetSql();
             sql.Throw().IfEmpty();
 
             try
             {
-                var result = await dbContext.Database.SqlQueryRaw<T>(sql).ToListAsync();
+                await using var command = dbContext.Database.GetDbConnection().CreateCommand();
+                command.CommandText = sql;
 
-                return result;
+                await dbContext.Database.OpenConnectionAsync();
+                await using var reader = await command.ExecuteReaderAsync();
+
+                var resultList = new List<T>();
+                while (await reader.ReadAsync())
+                {
+                    var instance = Activator.CreateInstance<T>();
+                    var properties = typeof(T).GetProperties();
+                    var values = new object[reader.FieldCount];
+                    reader.GetValues(values);
+
+                    for (int i = 0; i < reader.FieldCount; i++)
+                    {
+                        if (i < properties.Length)
+                        {
+                            properties[i].SetValue(instance, values[i]);
+                        }
+                    }
+
+                    resultList.Add(instance);
+                }
+
+                return resultList;
             }
             catch (Exception ex)
             {
@@ -72,23 +94,6 @@ namespace NetVisionProc.Common.Data
         {
             var listResult = await dbContext.GetListFromSqlRaw<T>(sqlScriptDef);
             return listResult.FirstOrDefault();
-        }
-        
-        public static bool GetFirstBoolFromSqlRaw(this DbContext dbContext, ISqlScriptDef sqlScriptDef)
-        {
-            try
-            {
-                var sql = sqlScriptDef.GetSql();
-                sql.Throw().IfEmpty();
-
-                return dbContext.Database.SqlQueryRaw<bool>(sql).ToList().FirstOrDefault();
-            }
-            catch (Exception ex)
-            {
-                throw new SqlOperationException(
-                    nameof(GetFirstBoolFromSqlRaw),
-                    $"An error occurred while executing SQL: {sqlScriptDef.GetSql()} with an error: {ex}");
-            }
         }
     }
 }

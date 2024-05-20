@@ -1,4 +1,3 @@
-using System;
 using System.IO;
 using Azure.Data.Tables;
 using Azure.Storage.Blobs;
@@ -9,7 +8,6 @@ using Microsoft.Extensions.DependencyInjection;
 using NetVisionProc.AzureHub;
 using NetVisionProc.AzureHub.Config;
 using Serilog;
-using Serilog.Sinks.SystemConsole.Themes;
 
 [assembly: FunctionsStartup(typeof(Startup))]
 namespace NetVisionProc.AzureHub
@@ -34,6 +32,7 @@ namespace NetVisionProc.AzureHub
 
             var azureHubConfig = new AzureHubConfig();
             config.GetSection(AzureHubConfig.SectionName).Bind(azureHubConfig);
+            builder.Services.AddSingleton(azureHubConfig);
             // builder.Services.ConfigureAzureHubDatabase<DbContext>(azureHubConfig);
 
             builder.Services.AddLogging(lb =>
@@ -45,20 +44,18 @@ namespace NetVisionProc.AzureHub
             builder.Services.AddScoped(sp =>
             {
                 var blobServiceClient = sp.GetRequiredService<BlobServiceClient>();
-                const string containerName = "blob-py-test";
-                return blobServiceClient.GetBlobContainerClient(containerName);
+                return blobServiceClient.GetBlobContainerClient(azureHubConfig.BlobContainerName);
             });
 
             builder.Services.AddSingleton(sp => new TableServiceClient(azureHubConfig.TableConnectionString));
             builder.Services.AddScoped(sp =>
             {
                 var tableServiceClient = sp.GetRequiredService<TableServiceClient>();
-                const string tableName = "BlobTriggerTest";
-                return tableServiceClient.GetTableClient(tableName);
+                return tableServiceClient.GetTableClient(azureHubConfig.TableStorageName);
             });
 
-            const string queueName = "blob-py-test-queue";
-            builder.Services.AddSingleton(sp => new QueueClient(azureHubConfig.QueueConnectionString, queueName));
+            builder.Services.AddSingleton(sp =>
+                new QueueClient(azureHubConfig.QueueConnectionString, azureHubConfig.QueueName));
         }
     }
 }

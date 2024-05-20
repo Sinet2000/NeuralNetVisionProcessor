@@ -1,0 +1,128 @@
+﻿@page "/"
+@using NetVisionProc.Application.AzureTableScope
+@using NetVisionProc.Application.AzureTableScope.Entities
+@using Azure.Storage.Blobs
+@using ClientApp.Config
+@using Microsoft.Extensions.Options
+@using NetVisionProc.Application.AzureTableScope.Models
+@using NetVisionProc.Common.Extensions
+
+@inject IAzureTableService AzureTableService
+@inject BlobServiceClient BlobServiceClient
+@inject BlobContainerClient BlobContainerClient
+@inject IOptions<AzureHubConfig> AzureHubConfigOptions
+@inject IDialogService DialogService
+@inject NavigationManager NavigationManager
+
+<style>
+    .selected {
+        background-color: #1E88E5 !important;
+    }
+    .selected > td {
+        color: white !important;
+    }
+    .selected > td .mud-input {
+        color: white !important;
+    }
+</style>
+
+<PageTitle>NetVisionProcessor Informācijas panelis</PageTitle>
+
+<MudTable T="ImagePredictionResultTableEntity" Items="Data" Hover="true" Breakpoint="Breakpoint.Sm" @ref="mudTable" Elevation="5"
+          RowClass="cursor-pointer">
+    <ToolBarContent>
+        <MudText Typo="Typo.h6">Periodic Elements</MudText>
+    </ToolBarContent>
+    <HeaderContent>
+        <MudTh>Attēls</MudTh>
+        <MudTh>Detektora tips</MudTh>
+        <MudTh>Statuss</MudTh>
+        <MudTh></MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="ImageName">@context.PredictionResult?.ImageName</MudTd>
+        <MudTd DataLabel="DetectorType">
+            @if (context.PredictionResult?.DetectorType == DetectorType.YoloV5)
+            {
+                <MudChip Color="Color.Info">@context.PredictionResult?.DetectorType.GetDisplayName()</MudChip>
+            }
+            else if (context.PredictionResult?.DetectorType == DetectorType.Ssd)
+            {
+                <MudChip Color="Color.Primary">@context.PredictionResult?.DetectorType.GetDisplayName()</MudChip>
+            }
+            else
+            {
+                <MudChip Color="Color.Warning">Nav zināms</MudChip>
+            }
+        </MudTd>
+        <MudTd DataLabel="Statuss">
+            @if (@context.PredictionResult?.HasErrors == true)
+            {
+                <MudChip Icon="@Icons.Material.Filled.Dangerous"
+                         IconColor="Color.Error"
+                         Color="Color.Error"
+                         Variant="Variant.Outlined"
+                         OnClick="@(() => OpenErrorsRead(context.PredictionResult?.Errors ?? string.Empty))">
+                    Kļūda
+                </MudChip>   
+            }
+            else
+            {
+                <MudChip Icon="@Icons.Material.Filled.VerifiedUser" Color="Color.Success">Veiksmīgi</MudChip>   
+            }
+        </MudTd>
+        <MudTd>
+            <MudIconButton Icon="@Icons.Material.Filled.Pageview"
+                           Color="Color.Info"
+                           Size="Size.Medium"
+                           Class="px-4 py-2"
+                           OnClick="@(() => { NavigationManager.NavigateTo($"/detection-result/{@context.PartitionKey}/{@context.RowKey}"); })">
+            </MudIconButton>
+        </MudTd>
+    </RowTemplate>
+    @* <PagerContent> *@
+    @*     <MudTablePager PageSizeOptions="new int[] { 10, 25, 50, 100, int.MaxValue }" *@
+    @*                    RowsPerPageString="@rowsPerPageString" *@
+    @*                    InfoFormat="@infoFormat" *@
+    @*                    AllItemsText="@allItemsText" *@
+    @*                    HorizontalAlignment="@horizontalAlignment" *@
+    @*                    HideRowsPerPage="@hideRowsPerPage" *@
+    @*                    HidePageNumber="@hidePageNumber" *@
+    @*                    HidePagination="@hidePagination" /> *@
+    @* </PagerContent> *@
+</MudTable>
+
+
+@code {
+    private List<ImagePredictionResultTableEntity> Data { get; set; } = []; 
+    
+    private int selectedRowNumber = -1;
+    private MudTable<ImagePredictionResultTableEntity> mudTable;
+    private List<string> clickedEvents = new();
+    
+    protected override async Task OnInitializedAsync()
+    {
+        var result = await AzureTableService
+            .GetListAsync<ImagePredictionResultTableEntity>(
+                string.Empty,
+                select: new [] {
+                    nameof(ImagePredictionResultTableEntity.PredictionResultJson),
+                    nameof(ImagePredictionResultTableEntity.PartitionKey),
+                    nameof(ImagePredictionResultTableEntity.RowKey)
+                });
+        result.ForEach(r => r.MaterializeJson());
+
+        Data = result;
+        
+        await base.OnInitializedAsync();
+    }
+    
+    private async void OpenErrorsRead(string errors)
+    {
+        bool? result = await DialogService.ShowMessageBox(
+            "Kļūdas", 
+            errors, 
+            yesText:"Ok", cancelText:"Aizvērt");
+        StateHasChanged();
+    }
+}

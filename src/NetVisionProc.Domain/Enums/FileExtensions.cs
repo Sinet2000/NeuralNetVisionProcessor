@@ -1,26 +1,34 @@
+using System.ComponentModel;
+
 namespace NetVisionProc.Domain.Enums
 {
-    public enum FileExtension : byte
+    public enum FileExtensions : byte
     {
-        jpg = 1,
-        png = 2,
-        gif = 3,
-        bmp = 4,
-        tiff = 5,
-        ico = 6,
-        jfif = 7,
-        webp = 8,
-        heif = 9,
-        bat = 10,
-        csv = 11,
-        docx = 12,
-        epub = 13,
-        jar = 14,
-        json = 15,
-        mp3 = 16,
-        mp4 = 17,
-        ods = 18,
-        pdf = 19,
-        xlsx = 20
+        [Description(".jpg")]
+        Jpg = 1,
+        
+        [Description(".png")]
+        Png = 2,
+        Gif = 3,
+        Bmp = 4,
+        Tiff = 5,
+        Ico = 6,
+        Jfif = 7,
+        Webp = 8,
+        Heif = 9,
+        Bat = 10,
+        Csv = 11,
+        Docx = 12,
+        Epub = 13,
+        Jar = 14,
+        Json = 15,
+        Mp3 = 16,
+        Mp4 = 17,
+        Ods = 18,
+        Pdf = 19,
+        Xlsx = 20,
+        
+        [Description(".jpeg")]
+        Jpeg = 21
     }
 }
