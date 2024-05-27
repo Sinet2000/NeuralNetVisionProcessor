@@ -18,8 +18,6 @@ namespace NetVisionProc.AzureHub
         {
             Log.Logger = new LoggerConfiguration()
                 .Enrich.FromLogContext()
-                // .WriteTo.Console(theme: SystemConsoleTheme.Colored)
-                // .WriteTo.File("./durable-function-log.txt")
                 .CreateLogger();
 
             var configurationBuilder = new ConfigurationBuilder()
@@ -33,6 +31,11 @@ namespace NetVisionProc.AzureHub
             var azureHubConfig = new AzureHubConfig();
             config.GetSection(AzureHubConfig.SectionName).Bind(azureHubConfig);
             builder.Services.AddSingleton(azureHubConfig);
+
+            var neuralVisionSystemConfig = new NeuralVisionSystemConfig();
+            config.GetSection(NeuralVisionSystemConfig.SectionName).Bind(neuralVisionSystemConfig);
+            builder.Services.AddSingleton(neuralVisionSystemConfig);
+            
             // builder.Services.ConfigureAzureHubDatabase<DbContext>(azureHubConfig);
 
             builder.Services.AddLogging(lb =>

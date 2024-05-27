@@ -1,8 +1,8 @@
 using System;
 using System.IO;
 using Azure.Storage.Blobs;
+using NetVisionProc.Common;
 using NetVisionProc.Common.Extensions;
-using NetVisionProc.Domain.Enums;
 using Throw;
 
 namespace NetVisionProc.AzureHub.Utils

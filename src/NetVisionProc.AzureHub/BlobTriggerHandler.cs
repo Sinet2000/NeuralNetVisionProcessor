@@ -1,4 +1,3 @@
-using System;
 using System.IO;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -31,7 +30,7 @@ namespace NetVisionProc.AzureHub
         
         [FunctionName(nameof(ImageBlobUploadTrigger))]
         public static async Task ImageBlobUploadTrigger(
-            [BlobTrigger("visionprocessor-origin/{name}", Connection = "AzureWebJobsStorage")] Stream imageBlob,
+            [BlobTrigger("%SourceBlobContainerName%/{name}", Connection = "AzureWebJobsStorage")] Stream imageBlob,
             string name,
             [DurableClient] IDurableOrchestrationClient starter,
             ILogger log)
@@ -44,10 +43,8 @@ namespace NetVisionProc.AzureHub
                     await imageBlob.CopyToAsync(ms);
                     blobBytes = ms.ToArray();
                 }
-
-                // Pass the byte array to BlobInputModel constructor
-                string instanceId = await starter.StartNewAsync<BlobInputModel>(
-                    nameof(ProcessImageBlobUploadedOrchestrator), new BlobInputModel(blobBytes, name));
+                
+                string instanceId = await starter.StartNewAsync(nameof(ProcessImageBlobUploadedOrchestrator), new BlobInputModel(blobBytes, name));
 
                 log.LogInformation($"Started orchestration with ID = '{instanceId}'.");
             }

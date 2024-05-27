@@ -7,7 +7,6 @@ using NetVisionProc.AzureHub.Activities.Models;
 using NetVisionProc.AzureHub.Config;
 using NetVisionProc.AzureHub.Models;
 using NetVisionProc.AzureHub.Models.Enums;
-using NetVisionProc.AzureHub.TableEntities;
 
 namespace NetVisionProc.AzureHub.Activities;
 

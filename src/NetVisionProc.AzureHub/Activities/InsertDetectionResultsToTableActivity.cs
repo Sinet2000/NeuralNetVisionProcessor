@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Azure.Data.Tables;
 using Microsoft.Extensions.Logging;
 using NetVisionProc.AzureHub.Activities.Models;
@@ -6,24 +7,24 @@ using NetVisionProc.AzureHub.TableEntities;
 
 namespace NetVisionProc.AzureHub.Activities;
 
-public class InsertDetectionResultToTableActivity
+public class InsertDetectionResultsToTableActivity
 {
     private readonly AzureHubConfig _config;
     private readonly TableClient _tableClient;
 
-    public InsertDetectionResultToTableActivity(AzureHubConfig config, TableClient tableClient)
+    public InsertDetectionResultsToTableActivity(AzureHubConfig config, TableClient tableClient)
     {
         _config = config;
         _tableClient = tableClient;
     }
 
-    [FunctionName(nameof(InsertDetectionResultToTableActivity))]
+    [FunctionName(nameof(InsertDetectionResultsToTableActivity))]
     public async Task Run([ActivityTrigger] IDurableActivityContext context, ILogger log)
     {
         await _tableClient.CreateIfNotExistsAsync();
-        var predictionResult = context.GetInput<ImagePredictionResult>();
+        var predictionResults = context.GetInput<List<ImagePredictionResult>>();
             
-        var processedBlobTableEntity = new ImagePredictionResultTableEntity(predictionResult);
+        var processedBlobTableEntity = new ImagePredictionResultTableEntity(predictionResults);
         var entityToInsert = new TableEntity(processedBlobTableEntity.PartitionKey, processedBlobTableEntity.RowKey);
         foreach (var kvp in processedBlobTableEntity.GetPropertiesDictionary())
         {

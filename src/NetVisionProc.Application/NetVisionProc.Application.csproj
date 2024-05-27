@@ -13,11 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\NetVisionProc.Adapter\NetVisionProc.Adapter.csproj" />
-    <ProjectReference Include="..\NetVisionProc.Common.Data\NetVisionProc.Common.Data.csproj" />
     <ProjectReference Include="..\NetVisionProc.Common\NetVisionProc.Common.csproj" />
-    <ProjectReference Include="..\NetVisionProc.Data\NetVisionProc.Data.csproj" />
-    <ProjectReference Include="..\NetVisionProc.Domain\NetVisionProc.Domain.csproj" />
   </ItemGroup>
 
 </Project>

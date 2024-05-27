@@ -4,6 +4,7 @@
     <AzureFunctionsVersion>v4</AzureFunctionsVersion>
     <UserSecretsId>ac31c8d6-d07e-4814-8b96-8af6afbda738</UserSecretsId>
     <RootNamespace>NetVisionProc.AzureHub</RootNamespace>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Azure.Messaging.ServiceBus" Version="7.17.4" />

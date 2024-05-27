@@ -1,6 +1,6 @@
 namespace NetVisionProc.AzureHub.Config
 {
-    public class AzureHubConfig
+    public record AzureHubConfig
     {
         public const string SectionName = "AzureHubConfig";
 

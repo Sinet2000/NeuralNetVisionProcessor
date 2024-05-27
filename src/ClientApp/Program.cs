@@ -13,10 +13,6 @@ using ClientApp.Setup;
 using Microsoft.AspNetCore.ResponseCompression;
 using NetCore.AutoRegisterDi;
 using NetVisionProc.Application;
-using NetVisionProc.Common.Data;
-using NetVisionProc.Common.Data.Interfaces;
-using NetVisionProc.Data;
-using NetVisionProc.Domain;
 using Serilog;
 using Sieve.Models;
 using Sieve.Services;
@@ -48,8 +44,6 @@ namespace ClientApp
                 var loggingSetup = new LoggingSetup(env, config);
                 loggingSetup.Configure(host);
                 
-                var dbSetup = new DatabaseSetup(env, config);
-                dbSetup.Configure(services);
                 
                 ConfigureServices(services, azureHubConfig);
                 
@@ -62,7 +56,6 @@ namespace ClientApp
                 services.ConfigureMudBlazor();
 
                 var app = builder.Build();
-                await dbSetup.Initialize(app.Services);
                 
                 // corsSetup.Configure(app);
                 loggingSetup.Configure(app);
@@ -100,38 +93,7 @@ namespace ClientApp
         {
             services.AddAutoMapper(
                 typeof(AzureHubConfig).Assembly,
-                typeof(BaseEntity).Assembly, // Domain
                 typeof(HealthCheckTestService).Assembly); // Application
-
-            services.AddScoped<IEntityOnlyQueryDbContext<AppMainDbContext>, EntityOnlyQueryDbContext<AppMainDbContext>>();
-            services.AddScoped<IEntityDbContext<AppMainDbContext>, EntityDbContext<AppMainDbContext>>();
-            
-            services.AddScoped<IFixture, Fixture>();
-            
-            services.AddScoped<ISieveProcessor, SieveProcessor>();
-            services.Configure<SieveOptions>(c =>
-            {
-                c.DefaultPageSize = CommonConst.TablePageSize;
-                c.ThrowExceptions = true;
-            });
-            
-            // services.AddScoped<IAzureTableStorage<Person>>(factory => {
-            //     return new AzureTableStorage<Person>(
-            //         new AzureTableSettings(
-            //             connectionString: Configuration["ConnectionString"],
-            //             tableName: Configuration["TableName"]));
-            // });
-
-            // services.AddScoped<ISieveProcessor, SieveProcessor>();
-            // services.Configure<SieveOptions>(c =>
-            // {
-            //     c.DefaultPageSize = CommonConst.TablePageSize;
-            //     c.ThrowExceptions = true;
-            // });
-
-            // services.RegisterAssemblyPublicNonGenericClasses(
-            //         typeof(HealthCheckTestService).Assembly)
-            //     .AsPublicImplementedInterfaces(); // Transient by default
             
             services.RegisterAssemblyPublicNonGenericClasses(
                     typeof(HealthCheckTestService).Assembly)

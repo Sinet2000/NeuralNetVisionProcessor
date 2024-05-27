@@ -1,4 +1,3 @@
-using Azure.Data.Tables;
 using NetVisionProc.Application.AzureTableScope;
 using NetVisionProc.Application.AzureTableScope.Entities;
 using NetVisionProc.Application.AzureTableScope.Models;
