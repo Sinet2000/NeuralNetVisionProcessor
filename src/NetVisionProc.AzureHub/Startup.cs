@@ -7,6 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using NetVisionProc.AzureHub;
 using NetVisionProc.AzureHub.Config;
+using NetVisionProc.AzureHub.Utils;
 using Serilog;
 
 [assembly: FunctionsStartup(typeof(Startup))]
@@ -59,6 +60,15 @@ namespace NetVisionProc.AzureHub
 
             builder.Services.AddSingleton(sp =>
                 new QueueClient(azureHubConfig.QueueConnectionString, azureHubConfig.QueueName));
+            
+            // Create blob containers if doesn't exist
+            AzureBlobUtil
+                .CheckAndCreateBlobContainer(azureHubConfig.BlobConnectionString, azureHubConfig.BlobContainerName)
+                .Wait();
+            
+            AzureBlobUtil
+                .CheckAndCreateBlobContainer(azureHubConfig.BlobConnectionString, azureHubConfig.ProcessedBlobsContainerName)
+                .Wait();
         }
     }
 }

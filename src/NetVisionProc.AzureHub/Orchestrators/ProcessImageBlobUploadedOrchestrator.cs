@@ -21,17 +21,17 @@ namespace NetVisionProc.AzureHub.Orchestrators
                 );
             imagePredictionsTasks.Add(yolovPredictionResult);
             
-            // var ssdPredictionResult = context.CallActivityAsync<ImagePredictionResult>(
-            //     nameof(RunImageDetectionActivity),
-            //     new DetectorInput(blobInput.Name, DetectorType.SSD)
-            //     );
-            // imagePredictionsTasks.Add(ssdPredictionResult);
-            //
-            // var maskRCnnPredictionResult = context.CallActivityAsync<ImagePredictionResult>(
-            //     nameof(RunImageDetectionActivity),
-            //     new DetectorInput(blobInput.Name, DetectorType.Mask_R_CNN)
-            //     );
-            // imagePredictionsTasks.Add(maskRCnnPredictionResult);
+            var ssdPredictionResult = context.CallActivityAsync<ImagePredictionResult>(
+                nameof(RunImageDetectionActivity),
+                new DetectorInput(blobInput.Name, DetectorType.SSD)
+                );
+            imagePredictionsTasks.Add(ssdPredictionResult);
+            
+            var maskRCnnPredictionResult = context.CallActivityAsync<ImagePredictionResult>(
+                nameof(RunImageDetectionActivity),
+                new DetectorInput(blobInput.Name, DetectorType.Mask_R_CNN)
+                );
+            imagePredictionsTasks.Add(maskRCnnPredictionResult);
             
             await Task.WhenAll(imagePredictionsTasks);
 
